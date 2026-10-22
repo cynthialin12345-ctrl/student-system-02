@@ -1,0 +1,322 @@
+@{
+    ViewData["Title"] = "統計分析";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h2 class="fw-bold text-dark-slate mb-1">時間分類分析報表</h2>
+            <p class="text-muted mb-0">藉由視覺化數據圖表檢視您的每日與每週時間分配情況</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- 左邊：本日總計與類別進度條 -->
+        <div class="col-lg-4 d-flex flex-column gap-4">
+            <!-- 今日總時間卡片 -->
+            <div class="card glass-card border-0 rounded-4 p-4 shadow-sm text-center">
+                <h3 class="card-title text-start mb-3"><i class="bi bi-clock-history me-2"></i>今日專注時間</h3>
+                <div class="total-time py-3 my-2 bg-timer-light rounded-3">
+                    <span id="displayHours" class="number">0</span><span class="unit">小時</span>
+                    <span id="displayMinutes" class="number">0</span><span class="unit">分鐘</span>
+                </div>
+                <p class="text-muted small mb-0 mt-2">今日所有已完成任務的時間總和</p>
+            </div>
+
+            <!-- 類別時長進度條 -->
+            <div class="card glass-card border-0 rounded-4 p-4 shadow-sm flex-grow-1">
+                <h3 class="card-title mb-4"><i class="bi bi-list-columns-reverse me-2"></i>本日分類時間</h3>
+                
+                <div class="bar-row mb-3">
+                    <div class="d-flex justify-content-between mb-1 small fw-medium text-dark-slate">
+                        <span>課業</span>
+                        <span id="studyHoursVal" class="text-study fw-bold">0h</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div id="studyBar" class="progress-bar bar-study" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-row mb-3">
+                    <div class="d-flex justify-content-between mb-1 small fw-medium text-dark-slate">
+                        <span>工作</span>
+                        <span id="workHoursVal" class="text-work fw-bold">0h</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div id="workBar" class="progress-bar bar-work" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-row mb-3">
+                    <div class="d-flex justify-content-between mb-1 small fw-medium text-dark-slate">
+                        <span>娛樂</span>
+                        <span id="playHoursVal" class="text-play fw-bold">0h</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div id="playBar" class="progress-bar bar-play" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="bar-row mb-3">
+                    <div class="d-flex justify-content-between mb-1 small fw-medium text-dark-slate">
+                        <span>休息</span>
+                        <span id="restHoursVal" class="text-rest fw-bold">0h</span>
+                    </div>
+                    <div class="progress progress-custom">
+                        <div id="restBar" class="progress-bar bar-rest" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右邊：圓餅圖與細分類橫條圖 -->
+        <div class="col-lg-8">
+            <div class="row g-4">
+                <!-- 比例圓餅圖 -->
+                <div class="col-md-6">
+                    <div class="card glass-card border-0 rounded-4 p-4 h-100 shadow-sm">
+                        <h3 class="card-title mb-3"><i class="bi bi-pie-chart-fill me-2"></i>時間分類佔比</h3>
+                        <div class="canvas-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 細分類長條圖 -->
+                <div class="col-md-6">
+                    <div class="card glass-card border-0 rounded-4 p-4 h-100 shadow-sm">
+                        <h3 class="card-title mb-3"><i class="bi bi-bar-chart-steps me-2"></i>常用細分類統計</h3>
+                        <div class="canvas-container">
+                            <canvas id="subCategoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 週統計折線圖 -->
+                <div class="col-12">
+                    <div class="card glass-card border-0 rounded-4 p-4 shadow-sm">
+                        <h3 class="card-title mb-3"><i class="bi bi-graph-up me-2"></i>本週專注趨勢 (小時)</h3>
+                        <div class="canvas-container weekly-canvas">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 莫蘭迪風格與毛玻璃卡片 */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .card-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #7A7A85;
+        letter-spacing: 0.5px;
+    }
+
+    .text-dark-slate {
+        color: #2C3E50;
+    }
+
+    /* 今日總計大數字 */
+    .bg-timer-light {
+        background-color: rgba(74, 107, 98, 0.05);
+        border: 1px solid rgba(74, 107, 98, 0.08);
+    }
+    .total-time .number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #4A6B62;
+    }
+    .total-time .unit {
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: #7F8C8D;
+        margin-right: 8px;
+        margin-left: 2px;
+    }
+
+    /* 進度條樣式 */
+    .progress-custom {
+        height: 8px;
+        background-color: rgba(0, 0, 0, 0.04);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    /* 莫蘭迪配色調 */
+    .bar-study, .text-study { background-color: #BDA8B4; color: #8C6A7B !important; }
+    .bar-work, .text-work { background-color: #9FB4C7; color: #5A778F !important; }
+    .bar-play, .text-play { background-color: #C3BCA0; color: #8C8255 !important; }
+    .bar-rest, .text-rest { background-color: #A2B5A9; color: #5F7A6B !important; }
+
+    /* 圖表容器大小 */
+    .canvas-container {
+        position: relative;
+        height: 220px;
+        width: 100%;
+    }
+    .weekly-canvas {
+        height: 250px;
+    }
+</style>
+
+<script>
+    // 網頁載入時動態抓取真實數據
+    document.addEventListener("DOMContentLoaded", function () {
+        Chart.defaults.color = '#7a7a85';
+        Chart.defaults.font.family = "'Outfit', sans-serif";
+
+        // 1. 初始化分類佔比圓餅圖 (預設空值)
+        const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(ctxCategory, {
+            type: 'doughnut',
+            data: {
+                labels: ['課業', '工作', '娛樂', '休息'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#BDA8B4', '#9FB4C7', '#C3BCA0', '#A2B5A9'],
+                    borderWidth: 2,
+                    borderColor: 'rgba(255, 255, 255, 0.9)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, padding: 15 }
+                    }
+                }
+            }
+        });
+
+        // 2. 初始化細分類統計條形圖
+        const ctxSubCategory = document.getElementById('subCategoryChart').getContext('2d');
+        const subCategoryChart = new Chart(ctxSubCategory, {
+            type: 'bar',
+            data: {
+                labels: ['載入中...'],
+                datasets: [{
+                    label: '累計時間 (小時)',
+                    data: [0],
+                    backgroundColor: 'rgba(159, 180, 199, 0.75)',
+                    borderColor: '#9FB4C7',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false }, beginAtZero: true },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 3. 初始化週趨勢折線圖
+        const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
+        const gradientFill = ctxWeekly.createLinearGradient(0, 0, 0, 250);
+        gradientFill.addColorStop(0, 'rgba(74, 107, 98, 0.3)');
+        gradientFill.addColorStop(1, 'rgba(74, 107, 98, 0.0)');
+
+        const weeklyChart = new Chart(ctxWeekly, {
+            type: 'line',
+            data: {
+                labels: ['週一', '週二', '週三', '週四', '週五', '週六', '週日'],
+                datasets: [{
+                    label: '專注時數 (小時)',
+                    data: [0, 0, 0, 0, 0, 0, 0],
+                    borderColor: '#4A6B62',
+                    backgroundColor: gradientFill,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#FFFFFF',
+                    pointBorderColor: '#4A6B62',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.04)' } }
+                }
+            }
+        });
+
+        // 4. AJAX 連接控制器獲取真實數據並渲染
+        fetch('/Statistics/GetDashboardData')
+            .then(response => response.json())
+            .then(data => {
+                // (1) 更新今日專注總時間
+                document.getElementById('displayHours').textContent = data.totalHours;
+                document.getElementById('displayMinutes').textContent = data.totalMinutes;
+
+                // (2) 更新左側進度條
+                const studyHrs = data.categoryHours[0];
+                const workHrs = data.categoryHours[1];
+                const playHrs = data.categoryHours[2];
+                const restHrs = data.categoryHours[3];
+
+                document.getElementById('studyHoursVal').textContent = studyHrs + 'h';
+                document.getElementById('workHoursVal').textContent = workHrs + 'h';
+                document.getElementById('playHoursVal').textContent = playHrs + 'h';
+                document.getElementById('restHoursVal').textContent = restHrs + 'h';
+
+                // 計算相對寬度百分比
+                const maxVal = Math.max(studyHrs, workHrs, playHrs, restHrs, 1);
+                document.getElementById('studyBar').style.width = (studyHrs / maxVal * 100) + '%';
+                document.getElementById('workBar').style.width = (workHrs / maxVal * 100) + '%';
+                document.getElementById('playBar').style.width = (playHrs / maxVal * 100) + '%';
+                document.getElementById('restBar').style.width = (restHrs / maxVal * 100) + '%';
+
+                // (3) 更新圓餅圖
+                categoryChart.data.datasets[0].data = data.categoryHours;
+                categoryChart.update();
+
+                // (4) 更新細分類長條圖
+                subCategoryChart.data.labels = data.subCategoryLabels;
+                subCategoryChart.data.datasets[0].data = data.subCategoryHours;
+                subCategoryChart.update();
+
+                // (5) 更新週統計折線圖
+                weeklyChart.data.datasets[0].data = data.weeklyHours;
+                weeklyChart.update();
+            })
+            .catch(error => {
+                console.error("無法加載報表數據，請確認資料庫及控制器是否配置正確：", error);
+            });
+    });
+</script>

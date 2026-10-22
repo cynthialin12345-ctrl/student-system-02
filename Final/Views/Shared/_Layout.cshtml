@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - 時間分類管理系統</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Final.styles.css" asp-append-version="true" />
+    <!-- 引入 Google Fonts Outfit 與 Bootstrap Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #F3F5F6;
+            color: #2C3E50;
+        }
+        
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            min-height: 64px;
+        }
+
+        .navbar-custom .container {
+            min-height: 48px;
+        }
+
+        .navbar-brand-custom {
+            font-weight: 700;
+            color: #4A6B62 !important;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .nav-link-custom {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            color: #5A6F68 !important;
+            padding: 8px 16px !important;
+            border-radius: 20px;
+            transition: all 0.25s ease;
+            min-height: 40px;
+            white-space: nowrap;
+        }
+
+        .nav-link-custom:hover {
+            color: #4A6B62 !important;
+            background-color: rgba(74, 107, 98, 0.08);
+        }
+
+        .nav-link-custom.active-nav {
+            color: #FFFFFF !important;
+            background-color: #4A6B62;
+        }
+
+        .navbar-user-label {
+            min-height: 40px;
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        footer {
+            background-color: #FAFAFA;
+            border-top: 1px solid #EAEAEA;
+            padding: 20px 0;
+            color: #7F8C8D;
+            font-size: 0.9rem;
+        }
+
+        .page-main {
+            flex: 1 0 auto;
+        }
+
+        .page-footer {
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    @{
+        var userName = Context.Session.GetString("UserName");
+        var isLoggedIn = !string.IsNullOrEmpty(userName);
+    }
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light navbar-custom mb-4">
+            <div class="container">
+                <a class="navbar-brand navbar-brand-custom" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-clock-history me-2"></i>時間分類管理系統
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse justify-content-end">
+                    <ul class="navbar-nav gap-2 align-items-lg-center">
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i>首頁
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" asp-area="" asp-controller="Focus" asp-action="Index">
+                                <i class="bi bi-stopwatch me-1"></i>專注計時
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" asp-area="" asp-controller="Activity" asp-action="History">
+                                <i class="bi bi-calendar-event me-1"></i>歷史紀錄
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" asp-area="" asp-controller="Statistics" asp-action="Index">
+                                <i class="bi bi-pie-chart me-1"></i>統計分析
+                            </a>
+                        </li>
+                        @if (isLoggedIn)
+                        {
+                            <li class="nav-item d-flex align-items-center px-2 text-muted small navbar-user-label">
+                                @userName
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    <button type="submit" class="nav-link nav-link-custom border-0 bg-transparent">
+                                        <i class="bi bi-box-arrow-right me-1"></i>登出
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-custom" asp-area="" asp-controller="Account" asp-action="Login">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>登入
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main role="main" class="page-main pb-5">
+        @RenderBody()
+    </main>
+
+    <footer class="page-footer text-center">
+        <div class="container">
+            <p class="mb-1">&copy; 2026 - 系統分析群組作業一 - 元智大學資訊管理學系</p>
+            <small>組員：江芮希、李怡萱、李昱琦、林以甯、林姿佑</small>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        // 自動為目前選中的頁面加上 active-nav 樣式
+        document.addEventListener("DOMContentLoaded", function() {
+            const currentPath = window.location.pathname.toLowerCase();
+            const navLinks = document.querySelectorAll(".nav-link-custom");
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute("href")?.toLowerCase();
+                if (!href) {
+                    return;
+                }
+                // 處理首頁的特殊路徑比對
+                if ((currentPath === "/" || currentPath === "/home" || currentPath === "/home/index") && (href === "/" || href === "/home" || href === "/home/index")) {
+                    link.classList.add("active-nav");
+                } else if (currentPath.includes(href) && href !== "/" && href !== "/home" && href !== "/home/index") {
+                    link.classList.add("active-nav");
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

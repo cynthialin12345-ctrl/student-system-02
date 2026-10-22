@@ -1,0 +1,167 @@
+@{
+    ViewData["Title"] = "首頁";
+}
+
+<div class="container py-5">
+    <!-- Hero Header -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-10 text-center">
+            <div class="hero-card glass-panel p-5 rounded-4 shadow-sm">
+                <span class="badge bg-soft-green text-green px-3 py-2 rounded-pill mb-3 fs-7 tracking-wider">元智資管 系統分析專案</span>
+                <h1 class="display-5 fw-bold text-dark-slate mb-3">時間分類管理系統</h1>
+                <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                    透過主分類與細分類雙層架構，即時追蹤您的專注時長。堅持「零補錄原則」，精確記錄並提供深入的每日、每週數據圖表分析，助您精準掌握時間分配。
+                </p>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a asp-controller="Focus" asp-action="Index" class="btn btn-primary-custom px-4 py-3 rounded-pill fw-medium shadow-sm">
+                        <i class="bi bi-play-circle-fill me-2"></i>開始今日專注
+                    </a>
+                    <a asp-controller="Statistics" asp-action="Index" class="btn btn-secondary-custom px-4 py-3 rounded-pill fw-medium">
+                        <i class="bi bi-graph-up-arrow me-2"></i>查看統計圖表
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Grid -->
+    <div class="row g-4 justify-content-center">
+        <!-- Feature 1: Focus Timer -->
+        <div class="col-md-4">
+            <div class="feature-card h-100 p-4 border-0 rounded-4 glass-panel text-center shadow-hover">
+                <div class="feature-icon bg-icon-green mx-auto mb-4 rounded-circle">
+                    <i class="bi bi-stopwatch text-white fs-3"></i>
+                </div>
+                <h3 class="h5 fw-bold text-dark-slate mb-3">專注計時</h3>
+                <p class="text-muted fs-6 mb-4">
+                    選擇「課業、工作、娛樂、休息」主分類，並自訂細分類，啟動實時計時器，專注當下任務。
+                </p>
+                <a asp-controller="Focus" asp-action="Index" class="btn btn-outline-custom mt-auto w-100 py-2 rounded-pill">
+                    進入計時器 <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Feature 2: History Log -->
+        <div class="col-md-4">
+            <div class="feature-card h-100 p-4 border-0 rounded-4 glass-panel text-center shadow-hover">
+                <div class="feature-icon bg-icon-blue mx-auto mb-4 rounded-circle">
+                    <i class="bi bi-calendar-event text-white fs-3"></i>
+                </div>
+                <h3 class="h5 fw-bold text-dark-slate mb-3">歷史紀錄查詢</h3>
+                <p class="text-muted fs-6 mb-4">
+                    提供完整的日誌清單，您可以根據日期快速搜尋每天所有的活動紀錄、耗時與狀態。
+                </p>
+                <a asp-controller="Activity" asp-action="History" class="btn btn-outline-custom mt-auto w-100 py-2 rounded-pill">
+                    查看日誌 <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Feature 3: Data Analytics -->
+        <div class="col-md-4">
+            <div class="feature-card h-100 p-4 border-0 rounded-4 glass-panel text-center shadow-hover">
+                <div class="feature-icon bg-icon-purple mx-auto mb-4 rounded-circle">
+                    <i class="bi bi-pie-chart text-white fs-3"></i>
+                </div>
+                <h3 class="h5 fw-bold text-dark-slate mb-3">統計分析圖表</h3>
+                <p class="text-muted fs-6 mb-4">
+                    自動生成圓餅圖、橫條圖及本週趨勢折線圖，協助您直觀了解各項活動佔據的時間比例。
+                </p>
+                <a asp-controller="Statistics" asp-action="Index" class="btn btn-outline-custom mt-auto w-100 py-2 rounded-pill">
+                    查看統計 <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 莫蘭迪配色方案與磨砂玻璃 */
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .hero-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 247, 247, 0.9) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .text-dark-slate {
+        color: #2C3E50;
+    }
+
+    /* 軟色調 Badge */
+    .bg-soft-green {
+        background-color: rgba(74, 107, 98, 0.1);
+    }
+    .text-green {
+        color: #4A6B62;
+        font-weight: 600;
+    }
+
+    /* 按鈕樣式 */
+    .btn-primary-custom {
+        background-color: #4A6B62;
+        color: #FFFFFF;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    .btn-primary-custom:hover {
+        background-color: #3B544D;
+        color: #FFFFFF;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary-custom {
+        background-color: #EAEDED;
+        color: #34495E;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    .btn-secondary-custom:hover {
+        background-color: #D5DBDB;
+        color: #34495E;
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-custom {
+        border: 1.5px solid #4A6B62;
+        color: #4A6B62;
+        font-weight: 500;
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+    .btn-outline-custom:hover {
+        background-color: #4A6B62;
+        color: #FFFFFF;
+    }
+
+    /* Feature Icons */
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    .bg-icon-green { background-color: #5A7784; }
+    .bg-icon-blue { background-color: #9FB4C7; }
+    .bg-icon-purple { background-color: #BDA8B4; }
+
+    /* 卡片懸停動畫 */
+    .feature-card {
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    .shadow-hover:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+        border-color: rgba(74, 107, 98, 0.2) !important;
+    }
+</style>

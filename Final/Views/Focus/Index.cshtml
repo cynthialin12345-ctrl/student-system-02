@@ -1,0 +1,232 @@
+﻿@{
+    ViewData["Title"] = "Focus";
+    // 動態讀取控制器傳過來的主分類清單
+    var categoryList = ViewBag.CategoryList as List<Final.Models.Category> ?? new List<Final.Models.Category>();
+    var isFocusing = ViewBag.IsFocusing == true;
+    var focusStartTime = ViewBag.FocusStartTime as string ?? string.Empty;
+}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400&display=swap" rel="stylesheet">
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            <div class="card bg-focus-card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-focus-header text-center py-3 border-0">
+                    <h4 class="card-title mb-0 fw-normal tracking-wide text-focus-dark">
+                        Smart Time Manager
+                    </h4>
+                </div>
+
+                <div class="card-body p-4 text-center">
+
+                    <div class="mb-3 text-focus-muted small tracking-wide d-flex justify-content-between px-2">
+                        <span><i class="bi bi-calendar3"></i> @ViewBag.TodayDate (@ViewBag.TodayDayOfWeek)</span>
+                        <span><i class="bi bi-clock"></i> 現在時間：<span id="currentTimeDisplay">--:--:--</span></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <span id="statusBadge" class="badge bg-focus-badge px-3 py-2 fw-normal text-focus-muted rounded-pill fs-7 tracking-wider">
+                            狀態：待命中
+                        </span>
+                    </div>
+
+                    <div class="py-4 my-3 bg-focus-timer rounded-3 shadow-inner border border-light">
+                        <div id="timerDisplay" class="display-3 text-focus-dark mb-1" style="font-family: 'Roboto Mono', monospace; font-weight: 300;">
+                            00:00:00
+                        </div>
+                    </div>
+
+                    <form asp-action="Start" method="post" class="text-start" id="startForm" style="@(isFocusing ? "display: none;" : "")">
+                        <div class="mb-3">
+                            <label class="form-label text-focus-dark small fw-medium">主分類</label>
+                            <select name="cateID" class="form-select bg-white border-focus text-focus-dark rounded-3 shadow-sm" required>
+                                <option value="" disabled selected hidden>選擇今日專注類型...</option>
+                                @foreach (var item in categoryList)
+                                {
+                                    <option value="@item.CateID">@item.CateName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-focus-dark small fw-medium">細分類（選填）</label>
+                            <input type="text" name="subName" class="form-control bg-white border-focus text-focus-dark rounded-3 shadow-sm" placeholder="Ex:做報告、開會..." />
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3 justify-content-center">
+                            <button type="submit" class="btn btn-focus-start btn-lg fw-medium py-3 tracking-wider shadow-sm">
+                                開始專注
+                            </button>
+                        </div>
+                    </form>
+
+                    <form asp-action="Stop" method="post" id="stopForm" style="@(isFocusing ? "" : "display: none;")">
+                        <div class="d-grid gap-2 justify-content-center">
+                            <button type="submit" class="btn btn-focus-stop btn-lg fw-medium py-2 tracking-wider">
+                                結束專注
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const startForm = document.getElementById("startForm");
+        const stopForm = document.getElementById("stopForm");
+        const timerDisplay = document.getElementById("timerDisplay");
+        const statusBadge = document.getElementById("statusBadge");
+        const currentTimeDisplay = document.getElementById("currentTimeDisplay");
+        const isFocusing = @isFocusing.ToString().ToLowerInvariant();
+        const focusStartTime = "@focusStartTime";
+
+        let timerInterval = null;
+        let seconds = 0;
+
+        // 💡 新增：時鐘功能，每秒更新右邊的「現在時間」
+        function updateClock() {
+            const now = new Date();
+            const hrs = now.getHours().toString().padStart(2, '0');
+            const mins = now.getMinutes().toString().padStart(2, '0');
+            const secs = now.getSeconds().toString().padStart(2, '0');
+            currentTimeDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // 網頁載入時立刻先執行一次
+
+        if (isFocusing && focusStartTime) {
+            const startTime = new Date(focusStartTime);
+            seconds = Math.floor((new Date() - startTime) / 1000);
+            setFocusingUI();
+            startTimer();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                seconds++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            let mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            let secs = (seconds % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }
+
+        function setFocusingUI() {
+            startForm.style.display = "none";
+            stopForm.style.display = "block";
+            statusBadge.textContent = "狀態：專注中";
+            statusBadge.className = "badge px-3 py-2 fw-normal text-white rounded-pill fs-7 tracking-wider";
+            statusBadge.style.backgroundColor = "#4A6B62";
+        }
+    });
+</script>
+
+<style>
+    body {
+        background-color: #F4F6F6; /* 霧面淺大理石灰背景，不刺眼 */
+        color: #2C3E50;
+    }
+
+    .bg-focus-card {
+        background-color: #FFFFFF;
+    }
+
+    /* 淡淡的頁首襯托 */
+    .bg-focus-header {
+        background-color: #FAFAFA;
+        border-bottom: 1px solid #EAEAEA !important;
+    }
+
+    /* 計時器溫潤內嵌背景 */
+    .bg-focus-timer {
+        background-color: #F8FAFA;
+    }
+
+    .bg-focus-card button {
+        cursor: pointer;
+        width: 200px;
+    }
+
+    /* 舒緩專注的莫蘭迪森林綠 */
+    .btn-focus-start {
+        background-color: #5a7784;
+        color: #FFFFFF;
+        font-weight: bold;
+        border: none;
+        border-radius: 50px; /* 💡 這裡新增了圓角 */
+        transition: background-color 0.2s ease;
+    }
+
+        .btn-focus-start:hover {
+            background-color: #7095a5;
+            color: #FFFFFF;
+        }
+
+    /* 莫蘭迪霧霾藍灰色（結束鈕） */
+    .btn-focus-stop {
+        background-color: #9a9c9d;
+        color: #FFFFFF;
+        font-weight: bold;
+        border: none;
+        border-radius: 50px; /* 💡 這裡也新增了圓角 */
+        transition: all 0.2s ease;
+    }
+
+        .btn-focus-stop:hover {
+            background-color: #b3b7b8;
+            color: #FFFFFF;
+        }
+
+    /* 狀態標籤 */
+    .bg-focus-badge {
+        background-color: #EAEDED;
+    }
+
+    /* 文字顏色抽取 */
+    .text-focus-dark {
+        color: #34495E;
+    }
+
+    .text-focus-muted {
+        color: #7F8C8D;
+    }
+
+    /* 邊框優化 */
+    .border-focus {
+        border: 1px solid #D5DBDB;
+    }
+
+        .border-focus:focus {
+            border-color: #4A6B62;
+            box-shadow: 0 0 0 0.2rem rgba(74, 107, 98, 0.15);
+        }
+
+    .tracking-wide {
+        letter-spacing: 0.5px;
+    }
+
+    .tracking-wider {
+        letter-spacing: 1.5px;
+    }
+
+    .tracking-widest {
+        letter-spacing: 3px;
+    }
+
+    .fs-7 {
+        font-size: 0.8rem;
+    }
+</style>

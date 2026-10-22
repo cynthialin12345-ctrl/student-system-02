@@ -1,0 +1,81 @@
+@{
+    ViewData["Title"] = "登入";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card login-card border-0 rounded-4 shadow-sm overflow-hidden">
+                <div class="card-header login-header border-0 text-center py-4">
+                    <h2 class="h4 fw-bold text-dark-slate mb-1">登入系統</h2>
+                    <p class="text-muted mb-0 small">使用帳號進入時間分類管理系統</p>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Login" method="post">
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger rounded-3 py-2" role="alert">
+                                @Html.ValidationSummary(excludePropertyErrors: true)
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label small fw-medium text-dark-slate">Email</label>
+                            <input type="email" id="email" name="email" class="form-control border-focus rounded-3 py-2" autocomplete="username" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label small fw-medium text-dark-slate">密碼</label>
+                            <input type="password" id="password" name="password" class="form-control border-focus rounded-3 py-2" autocomplete="current-password" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-login w-100 rounded-pill py-2 fw-medium">
+                            登入
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-card {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .login-header {
+        background-color: #FAFAFA;
+        border-bottom: 1px solid #EAEAEA !important;
+    }
+
+    .text-dark-slate {
+        color: #2C3E50;
+    }
+
+    .border-focus {
+        border: 1px solid #D5DBDB;
+    }
+
+    .border-focus:focus {
+        border-color: #4A6B62;
+        box-shadow: 0 0 0 0.2rem rgba(74, 107, 98, 0.15);
+    }
+
+    .btn-login {
+        background-color: #4A6B62;
+        color: #FFFFFF;
+        border: none;
+    }
+
+    .btn-login:hover {
+        background-color: #3B544D;
+        color: #FFFFFF;
+    }
+</style>

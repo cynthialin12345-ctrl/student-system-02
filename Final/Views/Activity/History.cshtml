@@ -1,0 +1,241 @@
+@model IEnumerable<Final.Models.ActivityViewModel>
+
+@{
+    ViewData["Title"] = "活動紀錄查詢";
+    var selectedDate = ViewBag.SelectedDate is DateTime date ? date : DateTime.Today;
+    string displayDate = selectedDate.ToString("yyyy/MM/dd");
+    string inputVal = selectedDate.ToString("yyyy-MM-dd");
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Panel -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom border-light">
+                <div>
+                    <h2 class="fw-bold text-dark-slate mb-1">歷史活動紀錄</h2>
+                    <p class="text-muted mb-0">查詢與瀏覽每日的時間運用日誌</p>
+                </div>
+                <div class="bg-date-badge px-3 py-2 rounded-pill mt-2 mt-sm-0 shadow-sm border border-light">
+                    <span class="fw-medium text-green small"><i class="bi bi-calendar3 me-2"></i>查詢日期：@displayDate</span>
+                </div>
+            </div>
+
+            <!-- Query Filter Form -->
+            <div class="card glass-panel border-0 rounded-4 p-3 mb-4 shadow-sm">
+                <form asp-action="History" method="get" class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <label class="col-form-label text-dark-slate small fw-medium">選擇日期：</label>
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" name="date" value="@inputVal" class="form-control bg-white border-focus rounded-3 shadow-sm" required />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary-custom px-4 py-2 rounded-pill fw-medium shadow-sm">
+                            <i class="bi bi-search me-1"></i> 查詢日誌
+                        </button>
+                    </div>
+                    <div class="col-auto ms-auto">
+                        <a asp-controller="Focus" asp-action="Index" class="btn btn-secondary-custom px-3 py-2 rounded-pill fw-medium text-decoration-none">
+                            <i class="bi bi-plus-circle me-1"></i> 新增活動
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Activity Logs Table Card -->
+            <div class="card glass-panel border-0 rounded-4 overflow-hidden shadow-sm">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-center">
+                        <thead class="table-header-custom text-white">
+                            <tr>
+                                <th scope="col" class="py-3">使用者</th>
+                                <th scope="col" class="py-3">主要分類</th>
+                                <th scope="col" class="py-3">細分類描述</th>
+                                <th scope="col" class="py-3">專注時段</th>
+                                <th scope="col" class="py-3">專注狀態</th>
+                                <th scope="col" class="py-3">累計時間</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="py-5 text-center text-muted">
+                                        <div class="py-4">
+                                            <i class="bi bi-folder2-open display-4 text-muted d-block mb-3"></i>
+                                            <span>該日期目前沒有任何專注活動紀錄喔！</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var item in Model)
+                                {
+                                    var totalDuration = "-";
+                                    if (item.EndTime.HasValue)
+                                    {
+                                        var span = item.EndTime.Value - item.StartTime;
+                                        if (span.TotalHours >= 1)
+                                        {
+                                            totalDuration = $"{(int)span.TotalHours} 小時 {span.Minutes} 分鐘";
+                                        }
+                                        else
+                                        {
+                                            totalDuration = $"{span.Minutes} 分鐘 {span.Seconds} 秒";
+                                        }
+                                    }
+
+                                    // 依分類選擇徽章顏色
+                                    string categoryBadgeClass = item.CategoryName switch
+                                    {
+                                        "課業" => "badge-study",
+                                        "工作" => "badge-work",
+                                        "娛樂" => "badge-play",
+                                        "休息" => "badge-rest",
+                                        _ => "badge-secondary"
+                                    };
+
+                                    // 依狀態選擇徽章
+                                    string statusBadgeClass = item.Status == "已完成" ? "bg-success-soft text-success-dark" : "bg-warning-soft text-warning-dark";
+
+                                    <tr>
+                                        <td class="fw-semibold text-dark-slate">@item.UserName</td>
+                                        <td>
+                                            <span class="badge @categoryBadgeClass px-3 py-2 rounded-pill fw-medium fs-8">
+                                                @item.CategoryName
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">
+                                            @(string.IsNullOrEmpty(item.SubName) ? "-" : item.SubName)
+                                        </td>
+                                        <td class="small text-muted">
+                                            @item.StartTime.ToString("HH:mm:ss") ~ @(item.EndTime.HasValue ? item.EndTime.Value.ToString("HH:mm:ss") : "--:--:--")
+                                        </td>
+                                        <td>
+                                            <span class="badge @statusBadgeClass px-3 py-2 rounded-pill fw-medium fs-8">
+                                                <span class="spinner-grow spinner-grow-sm me-1 align-middle @(item.Status == "已完成" ? "d-none" : "")" role="status" style="width: 8px; height: 8px;"></span>
+                                                @item.Status
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold text-green">@totalDuration</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .text-dark-slate {
+        color: #2C3E50;
+    }
+
+    .bg-date-badge {
+        background-color: rgba(74, 107, 98, 0.08);
+    }
+
+    .text-green {
+        color: #4A6B62;
+    }
+
+    /* 查詢表單邊框 */
+    .border-focus {
+        border: 1px solid #D5DBDB;
+    }
+    .border-focus:focus {
+        border-color: #4A6B62;
+        box-shadow: 0 0 0 0.25rem rgba(74, 107, 98, 0.15);
+    }
+
+    /* 按鈕樣式 */
+    .btn-primary-custom {
+        background-color: #4A6B62;
+        color: #FFFFFF;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    .btn-primary-custom:hover {
+        background-color: #3B544D;
+        color: #FFFFFF;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary-custom {
+        background-color: #EAEDED;
+        color: #34495E;
+        border: none;
+        transition: all 0.2s ease;
+    }
+    .btn-secondary-custom:hover {
+        background-color: #D5DBDB;
+        color: #34495E;
+    }
+
+    /* 表格樣式 */
+    .table-header-custom {
+        background-color: #5A7784;
+    }
+    
+    .table-header-custom th {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    .table-hover tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+    /* 分類徽章調色盤 */
+    .badge-study {
+        background-color: rgba(189, 168, 180, 0.2);
+        color: #8C6A7B;
+        border: 1px solid rgba(189, 168, 180, 0.4);
+    }
+    .badge-work {
+        background-color: rgba(159, 180, 199, 0.2);
+        color: #5A778F;
+        border: 1px solid rgba(159, 180, 199, 0.4);
+    }
+    .badge-play {
+        background-color: rgba(195, 188, 160, 0.25);
+        color: #8C8255;
+        border: 1px solid rgba(195, 188, 160, 0.4);
+    }
+    .badge-rest {
+        background-color: rgba(220, 220, 220, 0.3);
+        color: #6C757D;
+        border: 1px solid rgba(200, 200, 200, 0.5);
+    }
+
+    /* 狀態徽章調色盤 */
+    .bg-success-soft {
+        background-color: rgba(46, 204, 113, 0.12);
+    }
+    .text-success-dark {
+        color: #27AE60;
+    }
+    .bg-warning-soft {
+        background-color: rgba(241, 196, 15, 0.12);
+    }
+    .text-warning-dark {
+        color: #D4AC0D;
+    }
+
+    .fs-8 {
+        font-size: 0.78rem;
+    }
+</style>
